@@ -4,6 +4,54 @@ document.addEventListener('DOMContentLoaded', () => {
     const analyzeBtn = document.getElementById('analyze-btn');
     const responseBox = document.getElementById('ai-response-box');
 
+    const historyContainer = document.getElementById('history-container');
+
+    // 히스토리 가져오기 함수
+    const fetchHistory = async () => {
+        try {
+            const response = await fetch('/api/history');
+            const data = await response.json();
+
+            if (data.success) {
+                renderHistory(data.history);
+            }
+        } catch (error) {
+            console.error('Fetch History Error:', error);
+            historyContainer.innerHTML = '<p class="empty-text">히스토리를 불러오는 데 실패했습니다.</p>';
+        }
+    };
+
+    // 히스토리 렌더링 함수
+    const renderHistory = (history) => {
+        if (!history || history.length === 0) {
+            historyContainer.innerHTML = '<p class="empty-text">아직 작성된 일기가 없습니다. 첫 일기를 작성해보세요!</p>';
+            return;
+        }
+
+        historyContainer.innerHTML = history.map(item => {
+            const date = new Date(item.createdAt).toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            return `
+                <div class="history-card">
+                    <span class="history-date">${date}</span>
+                    <div class="history-content">
+                        <div class="history-original"><strong>일기:</strong> ${item.originalText}</div>
+                        <div class="history-ai"><strong>AI 답변:</strong> ${item.aiResponse}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+
+    // 페이지 로드 시 히스토리 로드
+    fetchHistory();
+
     // 음성 인식 설정 (Web Speech API)
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
@@ -83,6 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.success) {
                 responseBox.innerText = data.result;
                 responseBox.classList.add('active');
+                // 히스토리 갱신
+                fetchHistory();
             } else {
                 throw new Error(data.error || '분석 실패');
             }

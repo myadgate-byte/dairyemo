@@ -5,12 +5,22 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// 로컬 테스트를 위한 임시 메모리 저장소
+const localHistory = [];
+
 export default defineConfig({
   server: {
     port: 5173,
     proxy: {},
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
+        // 히스토리 가져오기 API 시뮬레이션
+        if (req.url === '/api/history' && req.method === 'GET') {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ success: true, history: [...localHistory].reverse() }));
+          return;
+        }
+
         if (req.url === '/api/analyze' && req.method === 'POST') {
           let body = '';
           req.on('data', chunk => {
@@ -39,10 +49,24 @@ export default defineConfig({
                 model: "gpt-4o-mini",
               });
 
-              const aiText = completion.choices[0].message.content;
+              // Redis 저장 로직 시뮬레이션 (로컬 환경)
+              const now = new Date();
+              const timestamp = now.getFullYear().toString() + 
+                               (now.getMonth() + 1).toString().padStart(2, '0') + 
+                               now.getDate().toString().padStart(2, '0') + 
+                               now.getHours().toString().padStart(2, '0') + 
+                               now.getMinutes().toString().padStart(2, '0') + 
+                               now.getSeconds().toString().padStart(2, '0');
+              const redisKey = `diaryemo-${timestamp}`;
+              console.log(`[Local Redis Simulation] Saving data to key: ${redisKey}`);
+              const diaryData = { originalText: text, aiResponse: aiText, createdAt: now.toISOString() };
+              console.log(`Content:`, diaryData);
+              
+              // 로컬 히스토리에 추가
+              localHistory.push(diaryData);
 
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ success: true, result: aiText }));
+              res.end(JSON.stringify({ success: true, result: aiText, savedKey: redisKey }));
             } catch (error) {
               console.error('Local API Error:', error);
               res.statusCode = 500;

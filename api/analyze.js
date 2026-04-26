@@ -1,12 +1,20 @@
 import OpenAI from "openai";
+import { Redis } from "@upstash/redis";
 
-// 서버 측에서만 접근 가능한 환경 변수 사용
+// OpenAI 클라이언트 초기화
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Redis 클라이언트 초기화
+// Vercel/Upstash Redis는 보통 UPSTASH_REDIS_REST_URL 및 UPSTASH_REDIS_REST_TOKEN을 사용하지만,
+// 사용자가 명시한 REDIS_URL이 있을 경우를 대비하여 유연하게 설정합니다.
+const redis = new Redis({
+    url: process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
+
 export default async function handler(request, response) {
-    // POST 요청만 허용
     if (request.method !== 'POST') {
         return response.status(405).json({ error: 'Method Not Allowed' });
     }
@@ -18,6 +26,7 @@ export default async function handler(request, response) {
     }
 
     try {
+        // 1. OpenAI를 통한 일기 분석
         const completion = await openai.chat.completions.create({
             messages: [
                 { 
@@ -34,15 +43,36 @@ export default async function handler(request, response) {
 
         const aiText = completion.choices[0].message.content;
 
+        // 2. Redis에 데이터 저장
+        // 고유 ID 생성 (diaryemo-YYYYMMDDHHMMSS)
+        const now = new Date();
+        const timestamp = now.getFullYear().toString() + 
+                         (now.getMonth() + 1).toString().padStart(2, '0') + 
+                         now.getDate().toString().padStart(2, '0') + 
+                         now.getHours().toString().padStart(2, '0') + 
+                         now.getMinutes().toString().padStart(2, '0') + 
+                         now.getSeconds().toString().padStart(2, '0');
+        
+        const redisKey = `diaryemo-${timestamp}`;
+        const diaryData = {
+            originalText: text,
+            aiResponse: aiText,
+            createdAt: now.toISOString()
+        };
+
+        // Redis에 저장 (JSON 형식으로 저장)
+        await redis.set(redisKey, JSON.stringify(diaryData));
+
         return response.status(200).json({
             success: true,
-            result: aiText
+            result: aiText,
+            savedKey: redisKey // 저장된 키 정보 반환 (확인용)
         });
     } catch (error) {
-        console.error('OpenAI API Error:', error);
+        console.error('API or Redis Error:', error);
         return response.status(500).json({
             success: false,
-            error: 'AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+            error: '분석 또는 저장 중 오류가 발생했습니다.'
         });
     }
 }
