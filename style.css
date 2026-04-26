@@ -1,0 +1,197 @@
+:root {
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    --secondary-color: #f3f4f6;
+    --secondary-hover: #e5e7eb;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+    --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --radius: 16px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: var(--text-main);
+}
+
+.app-container {
+    width: 100%;
+    max-width: 600px;
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.8s ease-out;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(to right, #4f46e5, #9333ea);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+}
+
+.input-section {
+    margin-bottom: 40px;
+}
+
+textarea {
+    width: 100%;
+    height: 200px;
+    padding: 20px;
+    border: 2px solid #e5e7eb;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-family: inherit;
+    resize: none;
+    outline: none;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+}
+
+button {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+.primary-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.primary-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.secondary-btn {
+    background: var(--secondary-color);
+    color: var(--text-main);
+}
+
+.secondary-btn:hover {
+    background: var(--secondary-hover);
+    transform: translateY(-2px);
+}
+
+.result-section {
+    border-top: 1px solid #f3f4f6;
+    padding-top: 30px;
+}
+
+h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-main);
+}
+
+.response-box {
+    background: #f9fafb;
+    padding: 25px;
+    border-radius: var(--radius);
+    min-height: 120px;
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    border: 1px dashed #d1d5db;
+    transition: all 0.3s ease;
+}
+
+.response-box.active {
+    background: #f0fdf4;
+    border-style: solid;
+    border-color: #86efac;
+    color: var(--text-main);
+}
+
+footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.secondary-btn.recording {
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .app-container {
+        padding: 25px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+}
